@@ -1,0 +1,6 @@
+{
+  "code": "23502",
+  "details": null,
+  "hint": null,
+  "message": "null value in column \"id\" of relation \"profiles\" violates not-null constraint"
+}

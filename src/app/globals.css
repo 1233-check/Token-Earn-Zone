@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #081008;
+  --color-foreground: #ffffff;
+  --color-accent: #19ac3e;
+  --color-accent-hover: #159234;
+  --color-card: #040804;
+  --color-card-border: #1a2a1b;
+  --color-text-muted: #4ab860;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base utility classes */
+@utility text-glow {
+  text-shadow: 0 0 10px var(--color-accent), 0 0 20px var(--color-accent);
+}
+
+/* Card Glow Gradient - this will provide the radial gradient shown in the middle of card 1 */
+.bg-card-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(25, 172, 62, 0.25) 0%, var(--color-card) 60%);
+}
+
+.bg-referral-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(25, 172, 62, 0.15) 0%, transparent 60%);
+}
