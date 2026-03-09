@@ -1,29 +1,29 @@
 "use client";
 
-import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react';
-import { WagmiProvider } from 'wagmi';
+import { createConfig, http, WagmiProvider } from 'wagmi';
 import { bsc } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { injected, walletConnect } from 'wagmi/connectors';
 
-// Setup queryClient
 const queryClient = new QueryClient();
 
-// Get projectId from environment variable or fallback to test ID
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'afdeb51280802c66cffedbf5a0aee491';
+// If they eventually provide a projectId, we can still support WalletConnect alongside injected wallets
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 
-// Create wagmiConfig
-const metadata = {
-    name: 'Token Earn',
-    description: 'The Future of Web3 Networking',
-    url: 'https://www.tokenearn.live', // Must match exact production domain including www
-    icons: ['https://www.tokenearn.live/logo.png']
+const connectors = [];
+connectors.push(injected());
+
+if (projectId) {
+    connectors.push(walletConnect({ projectId, showQrModal: true }));
 }
 
-const chains = [bsc] as const;
-const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
-
-// Create modal
-createWeb3Modal({ wagmiConfig, projectId });
+export const wagmiConfig = createConfig({
+    chains: [bsc],
+    connectors,
+    transports: {
+        [bsc.id]: http(),
+    },
+});
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
     return (

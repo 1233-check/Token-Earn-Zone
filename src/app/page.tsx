@@ -6,6 +6,7 @@ import { useAccount } from "wagmi";
 import { getOrCreateProfile, getDashboardStats } from "@/lib/supabase";
 import { DollarSign, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import ConnectButton from "@/components/ConnectButton";
 import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
 
@@ -96,8 +97,7 @@ export default function Home() {
 
         {/* User Card element replacing custom implementation for native AppKit support */}
         <div className="flex flex-col justify-center items-end h-[100px]">
-          {/* @ts-ignore */}
-          <w3m-button balance="show" />
+          <ConnectButton />
         </div>
       </div>
 
