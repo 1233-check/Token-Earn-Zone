@@ -85,7 +85,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                     </div>
 
                     <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-2 block">Admin Deposit Address (ERC20)</label>
+                        <label className="text-sm text-gray-400 mb-2 block">Admin Deposit Address (BEP20)</label>
                         <div className="flex items-center p-3 bg-[#0a0f0a] rounded-xl border border-[var(--color-card-border)]">
                             <span className="flex-1 font-mono text-gray-300 truncate">{depositAddress}</span>
                             <button
@@ -97,7 +97,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                                 <Copy size={18} />
                             </button>
                         </div>
-                        <p className="text-xs text-red-500 mt-2 text-center">Send only ERC20 tokens to this address.</p>
+                        <p className="text-xs text-red-500 mt-2 text-center">Send only BEP20 tokens to this address.</p>
                     </div>
 
                     <div className="w-full">

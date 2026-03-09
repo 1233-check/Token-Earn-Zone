@@ -23,13 +23,6 @@ export default function LoginPage() {
         setMounted(true);
     }, []);
 
-    // Redirect to dashboard if already logged in
-    useEffect(() => {
-        if (mounted && !authLoading && user) {
-            router.push("/");
-        }
-    }, [user, authLoading, mounted, router]);
-
     const { signUp, signIn } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
