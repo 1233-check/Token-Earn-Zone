@@ -75,7 +75,13 @@ export default function Home() {
     toast.success("Copied to clipboard!");
   };
 
-  const referralLink = `http://usdtearn.trade/Register?ref=${address || 'guest'}`;
+  const [referralLink, setReferralLink] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setReferralLink(`${window.location.origin}/?ref=${address || "guest"}`);
+    }
+  }, [address]);
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto w-full pb-28 pt-2">
@@ -156,9 +162,9 @@ export default function Home() {
       <div className="mt-2">
         <h2 className="text-white text-xl font-bold mb-4">My All Income</h2>
         <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
-          <IncomeItem label="Today Token Earn Trade Income" value={Number(stats?.todayBcTradeIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <IncomeItem label="Today Token Earn Trade Income" value={Number(stats?.todayTokenEarnIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <IncomeItem label="Total Token Earn Trade Income" value={Number(stats?.totalBcTradeIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <IncomeItem label="Total Token Earn Trade Income" value={Number(stats?.totalTokenEarnIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
           <IncomeItem label="Deposit Wallet (Total)" value={Number(stats?.totalDeposits || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
@@ -179,9 +185,9 @@ export default function Home() {
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
         <IncomeItem label="Today Direct Income" value="0.0000" isLoading={isLoadingStats} />
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Total Income" value={Number(stats?.totalBcTradeIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
+        <IncomeItem label="Total Income" value={Number(stats?.totalTokenEarnIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Today Total Income" value={Number(stats?.todayBcTradeIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
+        <IncomeItem label="Today Total Income" value={Number(stats?.todayTokenEarnIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
       </div>
 
       {/* My Business Lists */}

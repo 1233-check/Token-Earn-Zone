@@ -160,8 +160,8 @@ export async function getDashboardStats(walletAddress: string) {
     // 2. Compute sums from transactions
     let totalDeposits = 0;
     let todayDeposits = 0;
-    let totalBcTradeIncome = 0;
-    let todayBcTradeIncome = 0;
+    let totalTokenEarnIncome = 0;
+    let todayTokenEarnIncome = 0;
     let totalPreBooking = 0;
 
     (txs || []).forEach(tx => {
@@ -173,8 +173,8 @@ export async function getDashboardStats(walletAddress: string) {
             totalDeposits += amount;
             if (isToday) todayDeposits += amount;
         } else if (tx.type === 'roi_distribution') {
-            totalBcTradeIncome += amount;
-            if (isToday) todayBcTradeIncome += amount;
+            totalTokenEarnIncome += amount;
+            if (isToday) todayTokenEarnIncome += amount;
         } else if (tx.type === 'slot_booking') {
             totalPreBooking += amount;
         }
@@ -193,8 +193,8 @@ export async function getDashboardStats(walletAddress: string) {
     return {
         totalDeposits,
         todayDeposits,
-        totalBcTradeIncome,
-        todayBcTradeIncome,
+        totalTokenEarnIncome,
+        todayTokenEarnIncome,
         totalPreBooking,
         currentUnit,
         totalUnit: currentUnit, // Mocked for now
