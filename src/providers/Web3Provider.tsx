@@ -13,10 +13,10 @@ const queryClient = new QueryClient();
 const projectId = 'afdeb51280802c66cffedbf5a0aee491';
 // Create wagmiConfig
 const metadata = {
-    name: 'CryptoDash',
-    description: 'Crypto Dashboard UI',
-    url: 'https://cryptodash.com',
-    icons: ['https://avatars.githubusercontent.com/u/37784886']
+    name: 'Token Earn',
+    description: 'The Future of Web3 Networking',
+    url: 'https://tokenearn.live',
+    icons: ['https://tokenearn.live/logo.png']
 }
 
 const chains = [bsc] as const;
