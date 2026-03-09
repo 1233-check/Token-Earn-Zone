@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowDown } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useAuth } from "@/providers/AuthProvider";
-import { getOrCreateProfile, getDashboardStats, getTeamMembers } from "@/lib/supabase";
+import { getDashboardStats, getTeamMembers } from "@/lib/supabase";
 import { DollarSign, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConnectButton from "@/components/ConnectButton";
@@ -62,15 +62,13 @@ export default function Home() {
     async function loadData() {
       if (user) {
         setIsLoadingStats(true);
+        if (profile) setBalance(profile.total_balance || 0);
+
         // Use wallet address if connected, otherwise use profile data
         const walletAddr = address || profile?.wallet_address;
         if (walletAddr) {
-          const profileData = await getOrCreateProfile(walletAddr);
-          if (profileData) setBalance(profileData.total_balance);
           const dashboardData = await getDashboardStats(walletAddr);
           if (dashboardData) setStats(dashboardData);
-        } else if (profile) {
-          setBalance(profile.total_balance || 0);
         }
         setIsLoadingStats(false);
       }

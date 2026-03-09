@@ -77,36 +77,6 @@ export function onAuthStateChange(callback: (event: string, session: any) => voi
     return supabase.auth.onAuthStateChange(callback);
 }
 
-// Profiles
-export async function getOrCreateProfile(walletAddress: string) {
-    // First try to fetch
-    let { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('wallet_address', walletAddress)
-        .single();
-
-    // If not found, create one
-    if (error && error.code === 'PGRST116') {
-        const { data: newProfile, error: insertError } = await supabase
-            .from('profiles')
-            .insert([{ wallet_address: walletAddress, total_balance: 0 }])
-            .select()
-            .single();
-
-        if (insertError) {
-            console.error('Error creating profile:', insertError.message || insertError);
-            return null;
-        }
-        return newProfile;
-    }
-
-    if (error) {
-        console.error('Error fetching profile:', error.message || error);
-    }
-    return data;
-}
-
 // Transactions
 export async function createDepositRequest(walletAddress: string, txHash: string, amount: number = 0) {
     const { data, error } = await supabase
