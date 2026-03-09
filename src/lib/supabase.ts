@@ -171,11 +171,11 @@ export async function getDailySlotsConfig() {
     return data || { booking_date: today, slots_booked: 0 };
 }
 
-export async function getUserSlotStats(walletAddress: string) {
+export async function getUserSlotStats(userId: string) {
     const { data, error } = await supabase
         .from('slot_bookings')
         .select('*')
-        .eq('wallet_address', walletAddress);
+        .eq('wallet_address', userId);
 
     if (error) {
         console.error('Error fetching user slots:', error);
@@ -195,10 +195,10 @@ export async function getUserSlotStats(walletAddress: string) {
     };
 }
 
-export async function bookSlot(walletAddress: string, amount: number, roiRate: number) {
+export async function bookSlot(userId: string, amount: number, roiRate: number) {
     // We call the Postgres RPC function to safely handle limits and concurrency
     const { data, error } = await supabase.rpc('process_slot_booking', {
-        p_wallet_address: walletAddress,
+        p_user_id: userId,
         p_amount: amount,
         p_roi_rate: roiRate
     });
@@ -299,17 +299,10 @@ export async function updateTransactionStatus(id: string, status: 'approved' | '
 }
 
 export async function updateSlotStatus(id: string, status: 'active' | 'rejected') {
-    const updateData: any = { status };
-    if (status === 'active') {
-        updateData.approved_at = new Date().toISOString();
-    }
-
-    const { data, error } = await supabase
-        .from('slot_bookings')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
+    const { data, error } = await supabase.rpc('admin_approve_slot', {
+        p_slot_id: id,
+        p_status: status
+    });
     return { data, error };
 }
 

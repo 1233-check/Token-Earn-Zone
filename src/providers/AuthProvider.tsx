@@ -17,6 +17,7 @@ interface UserProfile {
     full_name: string | null;
     wallet_address: string | null;
     total_balance: number;
+    pre_booking_balance: number;
     created_at: string;
 }
 

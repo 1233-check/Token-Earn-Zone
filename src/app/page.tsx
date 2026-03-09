@@ -114,7 +114,7 @@ export default function Home() {
           <div className="font-bold text-[17px] leading-snug mt-2 z-10 w-1/2">Token Earn<br />Zone</div>
           <div className="text-right flex flex-col gap-2 items-end mt-2 z-10 w-1/2">
             <div className="font-bold text-[#e1e2e1] flex gap-2">Balance : {isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
-            <div className="font-bold text-[15px] leading-tight flex gap-2 items-center">Pre-Booking :<br />{isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${Number(stats?.totalPreBooking || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
+            <div className="font-bold text-[15px] leading-tight flex gap-2 items-center">Pre-Booking :<br />{isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${Number(profile?.pre_booking_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
           </div>
         </div>
 

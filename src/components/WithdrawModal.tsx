@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 import { createWithdrawRequest } from "@/lib/supabase";
 
 interface WithdrawModalProps {
@@ -10,7 +10,7 @@ interface WithdrawModalProps {
 }
 
 export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
-    const { address: connectedAddress } = useAccount();
+    const { user, profile, refreshProfile } = useAuth();
     const [address, setAddress] = useState("");
     const [amount, setAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,8 +20,8 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!connectedAddress) {
-            toast.error("Please connect your wallet first");
+        if (!user || !profile) {
+            toast.error("Please log in first");
             return;
         }
 
@@ -30,14 +30,21 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             return;
         }
 
-        if (parseFloat(amount) <= 0) {
+        const withdrawAmount = parseFloat(amount);
+
+        if (withdrawAmount <= 0) {
             toast.error("Amount must be greater than 0");
+            return;
+        }
+
+        if (withdrawAmount > profile.total_balance) {
+            toast.error("Insufficient balance");
             return;
         }
 
         setIsSubmitting(true);
 
-        const { error } = await createWithdrawRequest(connectedAddress, address, parseFloat(amount));
+        const { error } = await createWithdrawRequest(user.id, address, withdrawAmount);
 
         setIsSubmitting(false);
 
@@ -47,6 +54,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
         }
 
         toast.success("Withdrawal request submitted! Waiting for admin approval.");
+        await refreshProfile();
         onClose();
         setAddress("");
         setAmount("");
@@ -80,7 +88,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                     <div>
                         <label className="text-sm text-gray-400 mb-2 flex justify-between">
                             <span>Amount (USD)</span>
-                            <span className="text-gray-500">Balance: $12,450.00</span>
+                            <span className="text-gray-500">Balance: ${profile?.total_balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "0.00"}</span>
                         </label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -93,7 +101,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                             />
                             <button
                                 type="button"
-                                onClick={() => setAmount("12450.00")}
+                                onClick={() => setAmount(profile?.total_balance?.toString() || "0")}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--color-accent)] font-bold hover:underline"
                             >
                                 MAX

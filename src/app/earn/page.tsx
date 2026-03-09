@@ -3,11 +3,11 @@
 import { CircleDollarSign, TrendingUp, Zap, Clock, PackageOpen, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 import { getDailySlotsConfig, getUserSlotStats, bookSlot } from "@/lib/supabase";
 
 export default function EarnPage() {
-    const { address, isConnected } = useAccount();
+    const { user, profile, refreshProfile } = useAuth();
     const [activeTab, setActiveTab] = useState<"packages" | "mining">("packages");
     const [slotsRemaining, setSlotsRemaining] = useState<number>(50);
     const [userSlots, setUserSlots] = useState<{ activeSlots: number, pendingSlots: number, totalSlots: number, totalEarned: number, bookings?: any[] }>({ activeSlots: 0, pendingSlots: 0, totalSlots: 0, totalEarned: 0 });
@@ -21,8 +21,8 @@ export default function EarnPage() {
             // Maximum daily slots is 50. Config returns slots_booked
             setSlotsRemaining(Math.max(0, 50 - (config?.slots_booked || 0)));
 
-            if (address) {
-                const stats = await getUserSlotStats(address);
+            if (user) {
+                const stats = await getUserSlotStats(user.id);
                 setUserSlots(stats);
             }
         } catch (error) {
@@ -34,11 +34,16 @@ export default function EarnPage() {
 
     useEffect(() => {
         loadStats();
-    }, [address]);
+    }, [user]);
 
     const handlePreBook = async (amount: number, roiRate: number) => {
-        if (!isConnected || !address) {
-            toast.error("Please connect your wallet first.");
+        if (!user || !profile) {
+            toast.error("Please log in first.");
+            return;
+        }
+
+        if (profile.total_balance < amount) {
+            toast.error(`Insufficient balance. You need $${amount} to pre-book this slot.`);
             return;
         }
 
@@ -49,7 +54,7 @@ export default function EarnPage() {
 
         setIsBooking(true);
         try {
-            const { data, error } = await bookSlot(address, amount, roiRate);
+            const { data, error } = await bookSlot(user.id, amount, roiRate);
 
             if (error) {
                 throw new Error(error.message);
@@ -58,6 +63,7 @@ export default function EarnPage() {
             // Assume success if no error
             toast.success("Successfully booked! Waiting for Admin Approval.");
             await loadStats(); // Reload to reflect changes
+            await refreshProfile(); // Refresh balance
 
         } catch (error: any) {
             console.error("Booking failed:", error);
@@ -84,8 +90,8 @@ export default function EarnPage() {
                         <TrendingUp size={18} className="text-[var(--color-accent)]" />
                     </div>
                     <div>
-                        <p className="text-[var(--color-text-muted)] text-sm mb-1">Total Token Earn Trade Income</p>
-                        <p className="text-xl font-bold text-white">${isLoadingStats ? "..." : (userSlots.totalEarned || "0.00")}</p>
+                        <p className="text-[var(--color-text-muted)] text-sm mb-1">Balance</p>
+                        <p className="text-xl font-bold text-white">${isLoadingStats ? "..." : (profile?.total_balance?.toFixed(2) || "0.00")}</p>
                     </div>
                 </div>
                 <div className="bg-card rounded-2xl p-5 border border-[var(--color-card-border)] flex flex-col justify-between hover:border-[var(--color-accent)]/50 transition-colors">

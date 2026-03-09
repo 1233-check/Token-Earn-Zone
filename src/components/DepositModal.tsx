@@ -2,7 +2,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { X, Copy, Check } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 import { createDepositRequest } from "@/lib/supabase";
 
 interface DepositModalProps {
@@ -11,7 +11,7 @@ interface DepositModalProps {
 }
 
 export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
-    const { address } = useAccount();
+    const { user } = useAuth();
     const [hasTransferred, setHasTransferred] = useState(false);
     const [txHash, setTxHash] = useState("");
     const [amount, setAmount] = useState("");
@@ -30,8 +30,8 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
     const handleTransferClick = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!address) {
-            toast.error("Please connect your wallet first");
+        if (!user) {
+            toast.error("Please log in first");
             return;
         }
 
@@ -42,7 +42,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
 
         setIsSubmitting(true);
 
-        const { error } = await createDepositRequest(address, txHash, parseFloat(amount));
+        const { error } = await createDepositRequest(user.id, txHash, parseFloat(amount));
 
         setIsSubmitting(false);
 
