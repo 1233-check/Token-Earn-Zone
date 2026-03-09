@@ -7,6 +7,72 @@ console.log("Supabase Client Init - URL exists:", !!process.env.NEXT_PUBLIC_SUPA
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// =====================
+// AUTH FUNCTIONS
+// =====================
+
+export async function signUp(email: string, password: string, fullName?: string) {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: { full_name: fullName || '' }
+        }
+    });
+    return { data, error };
+}
+
+export async function signIn(email: string, password: string) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+    return { data, error };
+}
+
+export async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+}
+
+export async function getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    return { user, error };
+}
+
+export async function getCurrentSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    return { session, error };
+}
+
+export async function getUserProfile(userId: string) {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+    if (error) {
+        console.error('Error fetching user profile:', error.message);
+        return null;
+    }
+    return data;
+}
+
+export async function updateUserWallet(userId: string, walletAddress: string) {
+    const { data, error } = await supabase
+        .from('users')
+        .update({ wallet_address: walletAddress })
+        .eq('id', userId)
+        .select()
+        .single();
+    return { data, error };
+}
+
+export function onAuthStateChange(callback: (event: string, session: any) => void) {
+    return supabase.auth.onAuthStateChange(callback);
+}
+
 // Profiles
 export async function getOrCreateProfile(walletAddress: string) {
     // First try to fetch

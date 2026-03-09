@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ArrowDown } from "lucide-react";
 import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 import { getOrCreateProfile, getDashboardStats } from "@/lib/supabase";
 import { DollarSign, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -39,6 +40,7 @@ const BusinessItem = ({ label, value, isLoading }: { label: string, value: strin
 );
 
 export default function Home() {
+  const { user, profile } = useAuth();
   const { isConnected, address } = useAccount();
 
   const [balance, setBalance] = useState(0);
@@ -56,18 +58,23 @@ export default function Home() {
 
   useEffect(() => {
     async function loadData() {
-      if (isConnected && address) {
+      if (user) {
         setIsLoadingStats(true);
-        const profile = await getOrCreateProfile(address);
-        if (profile) setBalance(profile.total_balance);
-
-        const dashboardData = await getDashboardStats(address);
-        if (dashboardData) setStats(dashboardData);
+        // Use wallet address if connected, otherwise use profile data
+        const walletAddr = address || profile?.wallet_address;
+        if (walletAddr) {
+          const profileData = await getOrCreateProfile(walletAddr);
+          if (profileData) setBalance(profileData.total_balance);
+          const dashboardData = await getDashboardStats(walletAddr);
+          if (dashboardData) setStats(dashboardData);
+        } else if (profile) {
+          setBalance(profile.total_balance || 0);
+        }
         setIsLoadingStats(false);
       }
     }
     loadData();
-  }, [isConnected, address, isDepositOpen, isWithdrawOpen]);
+  }, [user, address, profile, isDepositOpen, isWithdrawOpen]);
 
   if (!mounted) return null;
 
@@ -80,9 +87,9 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setReferralLink(`${window.location.origin}/?ref=${address || "guest"}`);
+      setReferralLink(`${window.location.origin}/?ref=${profile?.unique_id || "guest"}`);
     }
-  }, [address]);
+  }, [profile]);
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto w-full pb-28 pt-2">

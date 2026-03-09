@@ -1,13 +1,13 @@
 "use client";
 
-import { useAccount } from "wagmi";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/providers/AuthProvider";
+import { Loader2 } from "lucide-react";
 
-// A wrapper component that checks authentication and redirects if necessary.
-// This is used instead of Next.js Middleware which historically struggles with client-side Web3 connection state.
+// A wrapper component that checks Supabase Auth session and redirects if necessary.
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-    const { isConnected } = useAccount();
+    const { user, isLoading } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
     const [mounted, setMounted] = useState(false);
@@ -17,26 +17,28 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }, []);
 
     useEffect(() => {
-        if (!mounted) return;
+        if (!mounted || isLoading) return;
 
-        // Public routes that don't require connection
         const isPublicRoute = pathname === "/login";
 
-        if (!isConnected && !isPublicRoute) {
-            // Not connected and trying to access a private route -> redirect to login
+        if (!user && !isPublicRoute) {
             router.replace("/login");
-        } else if (isConnected && isPublicRoute) {
-            // Connected but trying to access login -> redirect to dashboard
+        } else if (user && isPublicRoute) {
             router.replace("/");
         }
-    }, [isConnected, pathname, mounted, router]);
+    }, [user, isLoading, pathname, mounted, router]);
 
-    // Don't render children until mounted to prevent hydration errors,
-    // and don't render private content if not connected (unless on a public route).
-    if (!mounted) return null;
+    // Show loading spinner while auth state is being determined
+    if (!mounted || isLoading) {
+        return (
+            <div className="min-h-[100dvh] flex items-center justify-center bg-[#040804]">
+                <Loader2 size={32} className="animate-spin text-[var(--color-accent)]" />
+            </div>
+        );
+    }
 
-    // If they are on a protected route but not connected, render nothing while redirecting
-    if (!isConnected && pathname !== "/login") return null;
+    // If on protected route but not authenticated, show nothing while redirecting
+    if (!user && pathname !== "/login") return null;
 
     return <>{children}</>;
 }
