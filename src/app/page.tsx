@@ -76,13 +76,6 @@ export default function Home() {
     loadData();
   }, [user, address, profile, isDepositOpen, isWithdrawOpen]);
 
-  if (!mounted) return null;
-
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard!");
-  };
-
   const [referralLink, setReferralLink] = useState("");
 
   useEffect(() => {
@@ -90,6 +83,13 @@ export default function Home() {
       setReferralLink(`${window.location.origin}/?ref=${profile?.unique_id || "guest"}`);
     }
   }, [profile]);
+
+  if (!mounted) return null;
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard!");
+  };
 
   return (
     <div className="flex flex-col gap-6 max-w-md mx-auto w-full pb-28 pt-2">
