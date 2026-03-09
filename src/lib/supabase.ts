@@ -186,8 +186,8 @@ export async function getUserSlotStats(userId: string) {
         return { activeSlots: 0, pendingSlots: 0, totalSlots: 0, totalEarned: 0 };
     }
 
-    const activeSlots = data.filter(s => s.status === 'active').length;
-    const pendingSlots = data.filter(s => s.status === 'pending_approval').length;
+    const activeSlots = data.filter(s => s.status === 'active' || s.status === 'confirmed').length;
+    const pendingSlots = data.filter(s => s.status === 'pending_approval' || s.status === 'pending').length;
     const totalEarned = data.reduce((sum, slot) => sum + Number(slot.total_earned), 0);
 
     return {
@@ -331,4 +331,18 @@ export async function updateSlotStatus(id: string, status: 'active' | 'rejected'
 export async function distributeDailyRoi() {
     const { data, error } = await supabase.rpc('distribute_daily_roi');
     return { data, error };
+}
+
+export async function verifyTransactionPin(userId: string, pin: string): Promise<boolean> {
+    const { data, error } = await supabase.rpc("verify_transaction_pin", {
+        p_user_id: userId,
+        p_pin: pin
+    });
+
+    if (error) {
+        console.error("Error verifying PIN:", error);
+        return false;
+    }
+
+    return !!data;
 }

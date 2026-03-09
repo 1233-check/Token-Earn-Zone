@@ -221,11 +221,11 @@ export default function EarnPage() {
                                 <div key={slot.id} className="bg-card rounded-2xl p-5 border border-[var(--color-card-border)]">
                                     <div className="flex justify-between items-center mb-3">
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${slot.status === 'active' ? 'bg-[var(--color-accent)]' : 'bg-[#fbbf24]'}`} />
+                                            <div className={`w-2 h-2 rounded-full ${['active', 'confirmed'].includes(slot.status) ? 'bg-[var(--color-accent)]' : 'bg-[#fbbf24]'}`} />
                                             <span className="text-white font-medium">Slot ${slot.amount}</span>
                                         </div>
-                                        <div className={`px-2 py-0.5 rounded text-xs ${slot.status === 'active' ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
-                                            {slot.status === 'active' ? 'Active Mining' : 'Pending Admin Approval'}
+                                        <div className={`px-2 py-0.5 rounded text-xs ${['active', 'confirmed'].includes(slot.status) ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
+                                            {['active', 'confirmed'].includes(slot.status) ? 'Active Mining' : 'Pending Admin Approval'}
                                         </div>
                                     </div>
                                     <div className="flex justify-between text-sm">

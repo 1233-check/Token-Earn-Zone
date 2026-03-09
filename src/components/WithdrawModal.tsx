@@ -2,7 +2,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/providers/AuthProvider";
-import { createWithdrawRequest } from "@/lib/supabase";
+import { createWithdrawRequest, verifyTransactionPin } from "@/lib/supabase";
 
 interface WithdrawModalProps {
     isOpen: boolean;
@@ -13,6 +13,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     const { user, profile, refreshProfile } = useAuth();
     const [address, setAddress] = useState("");
     const [amount, setAmount] = useState("");
+    const [pin, setPin] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!isOpen) return null;
@@ -42,7 +43,26 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             return;
         }
 
+        if (!pin || pin.length < 4) {
+            toast.error("Please enter a valid Transaction PIN");
+            return;
+        }
+
         setIsSubmitting(true);
+
+        // Verify PIN first
+        try {
+            const isPinValid = await verifyTransactionPin(user.id, pin);
+            if (!isPinValid) {
+                toast.error("Invalid Transaction PIN. Please try again or check your Profile security settings.");
+                setIsSubmitting(false);
+                return;
+            }
+        } catch (error) {
+            toast.error("Error verifying PIN");
+            setIsSubmitting(false);
+            return;
+        }
 
         const { error } = await createWithdrawRequest(user.id, address, withdrawAmount);
 
@@ -58,6 +78,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
         onClose();
         setAddress("");
         setAmount("");
+        setPin("");
     };
 
     return (
@@ -107,6 +128,18 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                                 MAX
                             </button>
                         </div>
+                    </div>
+
+                    <div>
+                        <label className="text-sm text-gray-400 mb-2 block">Transaction PIN</label>
+                        <input
+                            type="password"
+                            value={pin}
+                            onChange={(e) => setPin(e.target.value)}
+                            placeholder="••••"
+                            maxLength={6}
+                            className="w-full bg-[#0a0f0a] border border-[var(--color-card-border)] rounded-xl px-4 py-3 text-white outline-none focus:border-[var(--color-accent)] transition-colors font-mono tracking-widest"
+                        />
                     </div>
 
                     <button

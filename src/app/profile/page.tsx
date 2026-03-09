@@ -5,8 +5,9 @@ import { User, LogOut, ShieldCheck, KeyRound, Users, Trophy, Wallet, Loader2, Co
 import ConnectButton from "@/components/ConnectButton";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
-import { getDashboardStats } from "@/lib/supabase";
+import { getDashboardStats, getTeamMembers } from "@/lib/supabase";
 import toast from "react-hot-toast";
+import TransactionPinModal from "@/components/TransactionPinModal";
 
 export default function ProfilePage() {
     const { user, profile, signOut, isLoading: authLoading } = useAuth();
@@ -15,7 +16,9 @@ export default function ProfilePage() {
     const [mounted, setMounted] = useState(false);
     const [stats, setStats] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [teamMembers, setTeamMembers] = useState<any[]>([]);
     const [copiedId, setCopiedId] = useState(false);
+    const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -30,6 +33,10 @@ export default function ProfilePage() {
                     if (walletAddr) {
                         const dashboardStats = await getDashboardStats(walletAddr);
                         setStats(dashboardStats);
+                    }
+                    if (profile?.unique_id) {
+                        const teamData = await getTeamMembers(profile.unique_id);
+                        setTeamMembers(teamData || []);
                     }
                 } catch (e) {
                     console.error("Failed to load stats", e);
@@ -143,14 +150,18 @@ export default function ProfilePage() {
                                 <Users size={18} className="text-[var(--color-text-muted)]" />
                                 <span className="text-white font-medium text-sm">Direct Referrals</span>
                             </div>
-                            <span className="text-2xl font-bold text-white">0</span>
+                            <span className="text-2xl font-bold text-white">
+                                {isLoading ? <Loader2 size={24} className="animate-spin" /> : teamMembers.length}
+                            </span>
                         </div>
                         <div className="bg-card rounded-2xl p-5 border border-[var(--color-card-border)] flex flex-col">
                             <div className="flex items-center gap-2 mb-3">
                                 <Users size={18} className="text-[var(--color-accent)]" />
                                 <span className="text-white font-medium text-sm">Team Size</span>
                             </div>
-                            <span className="text-2xl font-bold text-[var(--color-accent)]">0</span>
+                            <span className="text-2xl font-bold text-[var(--color-accent)]">
+                                {isLoading ? <Loader2 size={24} className="animate-spin" /> : teamMembers.length}
+                            </span>
                         </div>
                         <div className="bg-card rounded-2xl p-5 border border-[var(--color-card-border)] flex flex-col col-span-2">
                             <div className="flex items-center gap-2 mb-3">
@@ -184,7 +195,10 @@ export default function ProfilePage() {
                             </div>
                             <span className="text-[var(--color-text-muted)]">›</span>
                         </button>
-                        <button className="flex items-center justify-between p-5 hover:bg-white/5 text-left transition-colors">
+                        <button
+                            onClick={() => setIsPinModalOpen(true)}
+                            className="flex items-center justify-between p-5 hover:bg-white/5 text-left transition-colors"
+                        >
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-full bg-[#0a150b] flex items-center justify-center border border-[var(--color-card-border)]">
                                     <ShieldCheck size={18} className="text-[var(--color-text-muted)]" />
@@ -203,6 +217,14 @@ export default function ProfilePage() {
                     <Loader2 size={32} className="animate-spin text-[var(--color-accent)]" />
                     <p className="text-[var(--color-text-muted)] text-sm">Loading profile...</p>
                 </div>
+            )}
+
+            {user && (
+                <TransactionPinModal
+                    isOpen={isPinModalOpen}
+                    onClose={() => setIsPinModalOpen(false)}
+                    userId={user.id}
+                />
             )}
         </div>
     );
