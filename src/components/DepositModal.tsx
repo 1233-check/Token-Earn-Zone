@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import Image from "next/image";
 import { X, Copy, Check } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAccount } from "wagmi";
@@ -74,8 +74,14 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                 <h2 className="text-2xl font-bold mb-6">Deposit Crypto</h2>
 
                 <form onSubmit={handleTransferClick} className="flex flex-col items-center justify-center space-y-6">
-                    <div className="bg-white p-4 rounded-xl">
-                        <QRCodeSVG value={depositAddress} size={150} />
+                    <div className="bg-white p-2 rounded-xl flex justify-center items-center w-[200px] h-[200px] relative overflow-hidden">
+                        <Image
+                            src="/deposit-qr.jpg"
+                            alt="Deposit QR Code"
+                            fill
+                            className="object-contain"
+                            unoptimized
+                        />
                     </div>
 
                     <div className="w-full">
