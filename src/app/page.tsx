@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowDown } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useAuth } from "@/providers/AuthProvider";
-import { getOrCreateProfile, getDashboardStats } from "@/lib/supabase";
+import { getOrCreateProfile, getDashboardStats, getTeamMembers } from "@/lib/supabase";
 import { DollarSign, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConnectButton from "@/components/ConnectButton";
@@ -46,6 +46,8 @@ export default function Home() {
   const [balance, setBalance] = useState(0);
   const [stats, setStats] = useState<any>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
 
   const [mounted, setMounted] = useState(false);
 
@@ -80,9 +82,19 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setReferralLink(`${window.location.origin}/?ref=${profile?.unique_id || "guest"}`);
+      setReferralLink(`${window.location.origin}/login?ref=${profile?.unique_id || "guest"}`);
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (profile?.unique_id) {
+      setIsLoadingTeam(true);
+      getTeamMembers(profile.unique_id).then(data => {
+        setTeamMembers(data || []);
+        setIsLoadingTeam(false);
+      });
+    }
+  }, [profile?.unique_id]);
 
   if (!mounted) return null;
 
@@ -215,6 +227,34 @@ export default function Home() {
         <BusinessItem label="Total Team Unit" value="0" isLoading={isLoadingStats} />
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
         <BusinessItem label="Yesterday Team Unit(L/R)" value="0/0" isLoading={isLoadingStats} />
+      </div>
+
+      {/* My Team Members */}
+      <div className="mt-2">
+        <h2 className="text-white text-xl font-bold mb-4">My Team ({teamMembers.length})</h2>
+        <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
+          {isLoadingTeam ? (
+            <div className="flex justify-center p-4"><Loader2 className="animate-spin text-[var(--color-text-muted)]" /></div>
+          ) : teamMembers.length === 0 ? (
+            <div className="text-center text-[var(--color-text-muted)] py-4">No team members yet. Share your referral link!</div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {teamMembers.map((member, i) => (
+                <div key={member.id} className="flex justify-between items-center border-b border-[#1a2a1b] last:border-0 pb-3 last:pb-0">
+                  <div className="flex flex-col">
+                    <span className="text-white font-medium">{member.full_name || member.email?.split('@')[0] || "Anonymous User"}</span>
+                    <span className="text-[var(--color-text-muted)] text-xs">Joined: {new Date(member.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${member.referral_side === 'left' ? 'bg-blue-500/20 text-blue-400' : member.referral_side === 'right' ? 'bg-purple-500/20 text-purple-400' : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'}`}>
+                      {member.referral_side?.toUpperCase() || 'N/A'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <DepositModal isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />

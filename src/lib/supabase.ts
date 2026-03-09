@@ -11,12 +11,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // AUTH FUNCTIONS
 // =====================
 
-export async function signUp(email: string, password: string, fullName?: string) {
+export async function signUp(email: string, password: string, fullName?: string, referralCode?: string, referralSide?: string) {
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-            data: { full_name: fullName || '' }
+            data: {
+                full_name: fullName || '',
+                referred_by: referralCode || '',
+                referral_side: referralSide || ''
+            }
         }
     });
     return { data, error };
@@ -266,6 +270,24 @@ export async function getDashboardStats(walletAddress: string) {
         totalUnit: currentUnit, // Mocked for now
         // Assuming other metrics are 0 or placeholders until MLM tree is built
     };
+}
+
+// --- REFERRAL FUNCTIONS ---
+
+export async function getTeamMembers(uniqueId: string | undefined) {
+    if (!uniqueId) return [];
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, full_name, email, created_at, referral_side')
+        .eq('referred_by', uniqueId)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching team members:', error.message);
+        return [];
+    }
+    return data;
 }
 
 // --- ADMIN FUNCTIONS ---

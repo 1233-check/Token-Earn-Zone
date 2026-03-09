@@ -26,7 +26,7 @@ interface AuthContextType {
     profile: UserProfile | null;
     session: Session | null;
     isLoading: boolean;
-    signUp: (email: string, password: string, fullName?: string) => Promise<{ error: any }>;
+    signUp: (email: string, password: string, fullName?: string, referralCode?: string, referralSide?: string) => Promise<{ error: any }>;
     signIn: (email: string, password: string) => Promise<{ error: any }>;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
@@ -82,8 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
     }, []);
 
-    const handleSignUp = async (email: string, password: string, fullName?: string) => {
-        const { error } = await supaSignUp(email, password, fullName);
+    const handleSignUp = async (email: string, password: string, fullName?: string, referralCode?: string, referralSide?: string) => {
+        const { error } = await supaSignUp(email, password, fullName, referralCode, referralSide);
         return { error };
     };
 

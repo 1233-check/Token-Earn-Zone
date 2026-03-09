@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { ShieldCheck, TrendingUp, Users, Mail, Lock, UserPlus, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
     const { user, isLoading: authLoading } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [mounted, setMounted] = useState(false);
+    const refCode = searchParams.get('ref') || '';
+    const refSide = searchParams.get('side') || '';
 
     const [isSignUp, setIsSignUp] = useState(false);
     const [email, setEmail] = useState("");
@@ -33,7 +36,7 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
-                const { error: signUpError } = await signUp(email, password, fullName);
+                const { error: signUpError } = await signUp(email, password, fullName, refCode, refSide);
                 if (signUpError) {
                     setError(signUpError.message);
                 } else {
