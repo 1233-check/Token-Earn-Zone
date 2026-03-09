@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Landmark, ArrowRight, Building, HelpCircle, Loader2 } from "lucide-react";
-import { useAccount } from "wagmi";
-import { getOrCreateProfile, createWithdrawRequest } from "@/lib/supabase";
+import { useAuth } from "@/providers/AuthProvider";
+import { createWithdrawRequest, verifyTransactionPin } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 export default function BankPage() {
-    const { address, isConnected } = useAccount();
+    const { user, profile } = useAuth();
     const [withdrawalMethod, setWithdrawalMethod] = useState<"crypto" | "bank">("crypto");
 
     const [balance, setBalance] = useState(0);
@@ -17,26 +17,15 @@ export default function BankPage() {
     const [destAddress, setDestAddress] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const loadData = async () => {
-        if (!address) return;
-        setIsLoading(true);
-        try {
-            const profile = await getOrCreateProfile(address);
-            if (profile) setBalance(Number(profile.total_balance));
-        } catch (error) {
-            console.error("Failed to fetch balance", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     useEffect(() => {
-        loadData();
-    }, [address]);
+        if (profile) {
+            setBalance(Number(profile.total_balance) || 0);
+        }
+    }, [profile]);
 
     const handleWithdraw = async () => {
-        if (!isConnected || !address) {
-            toast.error("Please connect your wallet");
+        if (!user || !profile) {
+            toast.error("Please login first");
             return;
         }
 
@@ -58,13 +47,14 @@ export default function BankPage() {
 
         setIsSubmitting(true);
         try {
-            const { error } = await createWithdrawRequest(address, destAddress, numAmount);
+            // Note: The previous signature `createWithdrawRequest(address, destAddress, numAmount)`
+            // used the EVM wallet_address before. Now we use `user.id` mapping.
+            const { error } = await createWithdrawRequest(user.id, destAddress, numAmount);
             if (error) throw new Error(error.message);
 
             toast.success("Withdrawal request submitted successfully!");
             setAmount("");
             setDestAddress("");
-            await loadData(); // Reload balance (though technically balance deducts on approval usually, or immediately if trigger exists. Wait, trigger handles it. Oh wait, we don't have a trigger for pending withdrawals deducting balance. That's a future fix!)
         } catch (error: any) {
             console.error(error);
             toast.error(error.message || "Failed to submit request");
@@ -88,7 +78,7 @@ export default function BankPage() {
                 <p className="text-[var(--color-text-muted)] text-[15px] font-medium mb-1">Available for Withdrawal</p>
                 <div className="flex items-end justify-center gap-1 mb-2">
                     <span className="text-white text-4xl font-bold">
-                        {isLoading ? <Loader2 size={32} className="animate-spin inline" /> : `$${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                        ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <span className="text-[var(--color-text-muted)] text-lg mb-1">USD</span>
                 </div>
