@@ -30,11 +30,8 @@ export default function ProfilePage() {
             if (user && profile) {
                 setIsLoading(true);
                 try {
-                    const walletAddr = address || profile.wallet_address;
-                    if (walletAddr) {
-                        const dashboardStats = await getDashboardStats(walletAddr);
-                        setStats(dashboardStats);
-                    }
+                    const dashboardStats = await getDashboardStats(user.id);
+                    setStats(dashboardStats);
                     if (profile?.unique_id) {
                         const teamData = await getTeamMembers(profile.unique_id);
                         setTeamMembers(teamData || []);

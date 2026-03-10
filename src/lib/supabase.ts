@@ -114,11 +114,11 @@ export async function createWithdrawRequest(walletAddress: string, destinationAd
     return { data, error };
 }
 
-export async function getTransactions(walletAddress: string) {
+export async function getTransactions(userId: string) {
     const { data, error } = await supabase
         .from('transactions')
         .select('*')
-        .eq('wallet_address', walletAddress)
+        .or(`user_id.eq.${userId},wallet_address.eq.${userId}`)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -183,15 +183,23 @@ export async function bookSlot(userId: string, amount: number, roiRate: number) 
 }
 
 // Full Dashboard Stats
-export async function getDashboardStats(walletAddress: string) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+export async function getDashboardStats(userId: string) {
+    // "Today" starts at 2 AM IST = 20:30 UTC previous day
+    const now = new Date();
+    const todayStart = new Date();
+    // Set to today 2 AM IST (20:30 UTC)
+    todayStart.setUTCHours(20, 30, 0, 0);
+    if (now < todayStart) {
+        // If it's before 2 AM IST today, "today" started yesterday at 2 AM IST
+        todayStart.setUTCDate(todayStart.getUTCDate() - 1);
+    }
+    const todayISO = todayStart.toISOString();
 
-    // 1. Get transactions (deposits, ROI, slot bookings)
+    // 1. Get ALL approved transactions for this user (by user_id OR wallet_address fallback)
     const { data: txs, error: txError } = await supabase
         .from('transactions')
         .select('*')
-        .eq('wallet_address', walletAddress)
+        .or(`user_id.eq.${userId},wallet_address.eq.${userId}`)
         .eq('status', 'approved');
 
     if (txError) {
@@ -199,48 +207,92 @@ export async function getDashboardStats(walletAddress: string) {
         return null;
     }
 
-    // 2. Compute sums from transactions
+    // 2. Compute income sums from transactions
     let totalDeposits = 0;
     let todayDeposits = 0;
-    let totalTokenEarnIncome = 0;
-    let todayTokenEarnIncome = 0;
-    let totalPreBooking = 0;
+    let totalROIIncome = 0;
+    let todayROIIncome = 0;
 
     (txs || []).forEach(tx => {
-        const txDate = new Date(tx.created_at);
         const amount = Number(tx.amount || 0);
-        const isToday = txDate >= today;
+        const isToday = tx.created_at >= todayISO;
 
         if (tx.type === 'deposit') {
             totalDeposits += amount;
             if (isToday) todayDeposits += amount;
         } else if (tx.type === 'roi_distribution') {
-            totalTokenEarnIncome += amount;
-            if (isToday) todayTokenEarnIncome += amount;
-        } else if (tx.type === 'slot_booking') {
-            totalPreBooking += amount;
+            totalROIIncome += amount;
+            if (isToday) todayROIIncome += amount;
         }
     });
 
-    // 3. User Slots
+    // 3. User slots (active/confirmed)
     const { data: slots } = await supabase
         .from('slot_bookings')
-        .select('id, amount, status')
-        .eq('wallet_address', walletAddress);
+        .select('id, amount, status, total_earned')
+        .or(`user_id.eq.${userId},wallet_address.eq.${userId}`);
 
-    // 4. Mock MLM Stats (To be replaced with real referral logic if added later)
-    const activeSlotsCount = (slots || []).filter(s => s.status === 'active').length;
-    const currentUnit = activeSlotsCount * 20; // Example metric: $20 per unit
+    const activeSlots = (slots || []).filter(s => s.status === 'active' || s.status === 'confirmed');
+    const activeSlotCount = activeSlots.length;
+    const totalSlotInvestment = activeSlots.reduce((sum, s) => sum + Number(s.amount || 0), 0);
+    const totalSlotEarned = activeSlots.reduce((sum, s) => sum + Number(s.total_earned || 0), 0);
+
+    // 4. Team stats (left/right referral business volume)
+    const { data: userData } = await supabase
+        .from('users')
+        .select('unique_id')
+        .eq('id', userId)
+        .single();
+
+    let leftTeamCount = 0;
+    let rightTeamCount = 0;
+    let leftTeamBusiness = 0;
+    let rightTeamBusiness = 0;
+
+    if (userData?.unique_id) {
+        const { data: teamMembers } = await supabase
+            .from('users')
+            .select('id, referral_side')
+            .eq('referred_by', userData.unique_id);
+
+        for (const member of (teamMembers || [])) {
+            // Get each member's slot investments
+            const { data: memberSlots } = await supabase
+                .from('slot_bookings')
+                .select('amount, status')
+                .or(`user_id.eq.${member.id},wallet_address.eq.${member.id}`)
+                .in('status', ['active', 'confirmed']);
+
+            const memberBusiness = (memberSlots || []).reduce((s, sl) => s + Number(sl.amount || 0), 0);
+
+            if (member.referral_side === 'left') {
+                leftTeamCount++;
+                leftTeamBusiness += memberBusiness;
+            } else if (member.referral_side === 'right') {
+                rightTeamCount++;
+                rightTeamBusiness += memberBusiness;
+            }
+        }
+    }
 
     return {
+        // Income
+        todayROIIncome,
+        totalROIIncome,
         totalDeposits,
         todayDeposits,
-        totalTokenEarnIncome,
-        todayTokenEarnIncome,
-        totalPreBooking,
-        currentUnit,
-        totalUnit: currentUnit, // Mocked for now
-        // Assuming other metrics are 0 or placeholders until MLM tree is built
+        totalIncome: totalROIIncome,
+        todayIncome: todayROIIncome,
+        // Slots / Units
+        activeSlotCount,
+        totalSlotInvestment,
+        totalSlotEarned,
+        // Team Business
+        leftTeamCount,
+        rightTeamCount,
+        leftTeamBusiness,
+        rightTeamBusiness,
+        totalTeamBusiness: leftTeamBusiness + rightTeamBusiness,
     };
 }
 

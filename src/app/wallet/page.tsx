@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { ArrowDownLeft, ArrowUpRight, History, Send, QrCode, Copy, Loader2, CheckCircle2, Clock, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { useAccount } from "wagmi";
+import { useAuth } from "@/providers/AuthProvider";
 import { getDashboardStats, getTransactions, createDepositRequest } from "@/lib/supabase";
 
 export default function WalletPage() {
-    const { address, isConnected } = useAccount();
+    const { user, profile } = useAuth();
     const [activeTab, setActiveTab] = useState<"deposit" | "transfer">("deposit");
 
     const [totalDeposits, setTotalDeposits] = useState(0);
@@ -19,13 +19,13 @@ export default function WalletPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const loadData = async () => {
-        if (!address) return;
+        if (!user) return;
         setIsLoading(true);
         try {
-            const stats = await getDashboardStats(address);
+            const stats = await getDashboardStats(user.id);
             if (stats) setTotalDeposits(stats.totalDeposits);
 
-            const txs = await getTransactions(address);
+            const txs = await getTransactions(user.id);
             setTransactions(txs || []);
         } catch (error) {
             console.error("Failed to load wallet data", error);
@@ -36,11 +36,11 @@ export default function WalletPage() {
 
     useEffect(() => {
         loadData();
-    }, [address]);
+    }, [user]);
 
     const handleDepositSubmit = async () => {
-        if (!isConnected || !address) {
-            toast.error("Please connect your wallet");
+        if (!user) {
+            toast.error("Please login first");
             return;
         }
         if (!depositAmount || isNaN(Number(depositAmount)) || Number(depositAmount) <= 0) {
@@ -54,7 +54,7 @@ export default function WalletPage() {
 
         setIsSubmitting(true);
         try {
-            const { error } = await createDepositRequest(address, txHash, Number(depositAmount));
+            const { error } = await createDepositRequest(user.id, txHash, Number(depositAmount));
             if (error) throw new Error(error.message);
 
             toast.success("Deposit request submitted for approval!");
@@ -234,7 +234,7 @@ export default function WalletPage() {
                                     <div className="flex items-center gap-1">
                                         {getStatusIcon(tx.status)}
                                         <span className={`text-[10px] uppercase font-bold tracking-wider ${tx.status === 'approved' ? 'text-[var(--color-accent)]' :
-                                                tx.status === 'rejected' ? 'text-red-500' : 'text-[#fbbf24]'
+                                            tx.status === 'rejected' ? 'text-red-500' : 'text-[#fbbf24]'
                                             }`}>{tx.status}</span>
                                     </div>
                                 </div>

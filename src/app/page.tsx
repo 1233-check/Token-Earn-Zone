@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { ArrowDown } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useAuth } from "@/providers/AuthProvider";
-import { getDashboardStats, getTeamMembers } from "@/lib/supabase";
+import { getDashboardStats, getTeamMembers, getTotalTeamSize } from "@/lib/supabase";
 import { DollarSign, User, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConnectButton from "@/components/ConnectButton";
@@ -64,17 +64,14 @@ export default function Home() {
         setIsLoadingStats(true);
         if (profile) setBalance(profile.total_balance || 0);
 
-        // Use wallet address if connected, otherwise use profile data
-        const walletAddr = address || profile?.wallet_address;
-        if (walletAddr) {
-          const dashboardData = await getDashboardStats(walletAddr);
-          if (dashboardData) setStats(dashboardData);
-        }
+        // Load stats using user.id (the unified identifier)
+        const dashboardData = await getDashboardStats(user.id);
+        if (dashboardData) setStats(dashboardData);
         setIsLoadingStats(false);
       }
     }
     loadData();
-  }, [user, address, profile, isDepositOpen, isWithdrawOpen]);
+  }, [user, profile, isDepositOpen, isWithdrawOpen]);
 
   const [referralLink, setReferralLink] = useState("");
 
@@ -175,56 +172,42 @@ export default function Home() {
         </div>
       </div>
 
-      {/* My All Income Lists */}
+      {/* My All Income */}
       <div className="mt-2">
         <h2 className="text-white text-xl font-bold mb-4">My All Income</h2>
         <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
-          <IncomeItem label="Today Token Earn Trade Income" value={Number(stats?.todayTokenEarnIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <IncomeItem label="Today Mining Reward" value={Number(stats?.todayROIIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <IncomeItem label="Total Token Earn Trade Income" value={Number(stats?.totalTokenEarnIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <IncomeItem label="Total Mining Reward" value={Number(stats?.totalROIIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <IncomeItem label="Deposit Wallet (Total)" value={Number(stats?.totalDeposits || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} isLoading={isLoadingStats} />
+          <IncomeItem label="Total Deposits" value={Number(stats?.totalDeposits || 0).toFixed(2)} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <IncomeItem label="Today Team Deposit" value="0.00000000" isLoading={isLoadingStats} />
+          <IncomeItem label="Today Deposits" value={Number(stats?.todayDeposits || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <div className="h-[1px] w-full bg-[#1a2a1b]" />
+          <IncomeItem label="Total Income" value={Number(stats?.totalIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
+          <div className="h-[1px] w-full bg-[#1a2a1b]" />
+          <IncomeItem label="Today Total Income" value={Number(stats?.todayIncome || 0).toFixed(2)} isLoading={isLoadingStats} />
         </div>
       </div>
 
-      <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
-        <IncomeItem label="Today Matching Income" value="0.00" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Total Matching Income" value="0.0000" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Total Level Income" value="0.00" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Today Level Income" value="0.0000" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Total Direct Income" value="0.00" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Today Direct Income" value="0.0000" isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Total Income" value={Number(stats?.totalTokenEarnIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
-        <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <IncomeItem label="Today Total Income" value={Number(stats?.todayTokenEarnIncome || 0).toFixed(4)} isLoading={isLoadingStats} />
-      </div>
-
-      {/* My Business Lists */}
+      {/* My Business */}
       <div className="mt-2">
         <h2 className="text-white text-xl font-bold mb-4">My Business</h2>
         <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
-          <BusinessItem label="Current Unit" value={stats?.currentUnit || 0} isLoading={isLoadingStats} />
+          <BusinessItem label="Active Slots" value={stats?.activeSlotCount || 0} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <BusinessItem label="Total Unit" value={stats?.totalUnit || 0} isLoading={isLoadingStats} />
+          <BusinessItem label="Slot Investment" value={`$${Number(stats?.totalSlotInvestment || 0).toFixed(2)}`} isLoading={isLoadingStats} />
           <div className="h-[1px] w-full bg-[#1a2a1b]" />
-          <BusinessItem label="Today Team Unit(L/R)" value="0/0" isLoading={isLoadingStats} />
+          <BusinessItem label="Total Slot Earned" value={`$${Number(stats?.totalSlotEarned || 0).toFixed(2)}`} isLoading={isLoadingStats} />
         </div>
       </div>
 
       <div className="bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-3xl p-5 flex flex-col gap-4 shadow-sm">
-        <BusinessItem label="Current Team Unit" value="0" isLoading={isLoadingStats} />
+        <BusinessItem label="Team Business (L/R)" value={`$${Number(stats?.leftTeamBusiness || 0).toFixed(0)} / $${Number(stats?.rightTeamBusiness || 0).toFixed(0)}`} isLoading={isLoadingStats} />
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <BusinessItem label="Total Team Unit" value="0" isLoading={isLoadingStats} />
+        <BusinessItem label="Team Members (L/R)" value={`${stats?.leftTeamCount || 0} / ${stats?.rightTeamCount || 0}`} isLoading={isLoadingStats} />
         <div className="h-[1px] w-full bg-[#1a2a1b]" />
-        <BusinessItem label="Yesterday Team Unit(L/R)" value="0/0" isLoading={isLoadingStats} />
+        <BusinessItem label="Total Team Business" value={`$${Number(stats?.totalTeamBusiness || 0).toFixed(2)}`} isLoading={isLoadingStats} />
       </div>
 
       {/* My Team Members */}
