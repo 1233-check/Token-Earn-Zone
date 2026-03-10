@@ -251,7 +251,7 @@ export async function getTeamMembers(uniqueId: string | undefined) {
 
     const { data, error } = await supabase
         .from('users')
-        .select('id, full_name, email, created_at, referral_side')
+        .select('id, full_name, email, unique_id, created_at, referral_side')
         .eq('referred_by', uniqueId)
         .order('created_at', { ascending: false });
 
@@ -259,7 +259,30 @@ export async function getTeamMembers(uniqueId: string | undefined) {
         console.error('Error fetching team members:', error.message);
         return [];
     }
-    return data;
+
+    // For each direct referral, fetch their recursive team count
+    const membersWithCounts = await Promise.all(
+        (data || []).map(async (member) => {
+            const { data: count } = await supabase.rpc('get_team_count', {
+                p_unique_id: member.unique_id
+            });
+            return { ...member, teamCount: count || 0 };
+        })
+    );
+
+    return membersWithCounts;
+}
+
+export async function getTotalTeamSize(uniqueId: string | undefined): Promise<number> {
+    if (!uniqueId) return 0;
+    const { data, error } = await supabase.rpc('get_team_count', {
+        p_unique_id: uniqueId
+    });
+    if (error) {
+        console.error('Error fetching total team size:', error.message);
+        return 0;
+    }
+    return data || 0;
 }
 
 // --- ADMIN FUNCTIONS ---

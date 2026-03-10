@@ -5,7 +5,7 @@ import { User, LogOut, ShieldCheck, KeyRound, Users, Trophy, Wallet, Loader2, Co
 import ConnectButton from "@/components/ConnectButton";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
-import { getDashboardStats, getTeamMembers } from "@/lib/supabase";
+import { getDashboardStats, getTeamMembers, getTotalTeamSize } from "@/lib/supabase";
 import toast from "react-hot-toast";
 import TransactionPinModal from "@/components/TransactionPinModal";
 
@@ -17,6 +17,7 @@ export default function ProfilePage() {
     const [stats, setStats] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [teamMembers, setTeamMembers] = useState<any[]>([]);
+    const [totalTeamSize, setTotalTeamSize] = useState(0);
     const [copiedId, setCopiedId] = useState(false);
     const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
@@ -37,6 +38,8 @@ export default function ProfilePage() {
                     if (profile?.unique_id) {
                         const teamData = await getTeamMembers(profile.unique_id);
                         setTeamMembers(teamData || []);
+                        const totalSize = await getTotalTeamSize(profile.unique_id);
+                        setTotalTeamSize(totalSize);
                     }
                 } catch (e) {
                     console.error("Failed to load stats", e);
@@ -160,7 +163,7 @@ export default function ProfilePage() {
                                 <span className="text-white font-medium text-sm">Team Size</span>
                             </div>
                             <span className="text-2xl font-bold text-[var(--color-accent)]">
-                                {isLoading ? <Loader2 size={24} className="animate-spin" /> : teamMembers.length}
+                                {isLoading ? <Loader2 size={24} className="animate-spin" /> : totalTeamSize}
                             </span>
                         </div>
                         <div className="bg-card rounded-2xl p-5 border border-[var(--color-card-border)] flex flex-col col-span-2">

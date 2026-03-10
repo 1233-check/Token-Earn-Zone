@@ -244,6 +244,11 @@ export default function Home() {
                     <span className="text-[var(--color-text-muted)] text-xs">Joined: {new Date(member.created_at).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-2">
+                    {member.teamCount > 0 && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
+                        {member.teamCount} in team
+                      </span>
+                    )}
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${member.referral_side === 'left' ? 'bg-blue-500/20 text-blue-400' : member.referral_side === 'right' ? 'bg-purple-500/20 text-purple-400' : 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'}`}>
                       {member.referral_side?.toUpperCase() || 'N/A'}
                     </span>
