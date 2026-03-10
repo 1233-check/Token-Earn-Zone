@@ -30,8 +30,8 @@ export default function BankPage() {
         }
 
         const numAmount = Number(amount);
-        if (!numAmount || isNaN(numAmount) || numAmount < 10) {
-            toast.error("Minimum withdrawal is $10.00");
+        if (!numAmount || isNaN(numAmount) || numAmount < 15) {
+            toast.error("Minimum withdrawal is $15.00");
             return;
         }
 
@@ -83,7 +83,7 @@ export default function BankPage() {
                     <span className="text-[var(--color-text-muted)] text-lg mb-1">USD</span>
                 </div>
                 <div className="flex gap-2 items-center text-xs text-[#fbbf24] bg-[#fbbf24]/10 px-3 py-1.5 rounded-lg border border-[#fbbf24]/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#fbbf24] animate-pulse"></span> Minimum withdrawal is $10.00
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#fbbf24] animate-pulse"></span> Minimum withdrawal is $15.00
                 </div>
             </div>
 
