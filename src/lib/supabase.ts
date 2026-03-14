@@ -255,28 +255,15 @@ export async function getDashboardStats(userId: string) {
     let rightTeamBusiness = 0;
 
     if (userData?.unique_id) {
-        const { data: teamMembers } = await supabase
-            .from('users')
-            .select('id, referral_side')
-            .eq('referred_by', userData.unique_id);
-
-        for (const member of (teamMembers || [])) {
-            // Get each member's slot investments
-            const { data: memberSlots } = await supabase
-                .from('slot_bookings')
-                .select('amount, status')
-                .or(`user_id.eq.${member.id},wallet_address.eq.${member.id}`)
-                .in('status', ['active', 'confirmed']);
-
-            const memberBusiness = (memberSlots || []).reduce((s, sl) => s + Number(sl.amount || 0), 0);
-
-            if (member.referral_side === 'left') {
-                leftTeamCount++;
-                leftTeamBusiness += memberBusiness;
-            } else if (member.referral_side === 'right') {
-                rightTeamCount++;
-                rightTeamBusiness += memberBusiness;
-            }
+        const { data: teamStats } = await supabase.rpc('get_team_stats', {
+            p_unique_id: userData.unique_id
+        });
+        
+        if (teamStats) {
+            leftTeamCount = teamStats.leftTeamCount || 0;
+            rightTeamCount = teamStats.rightTeamCount || 0;
+            leftTeamBusiness = teamStats.leftTeamBusiness || 0;
+            rightTeamBusiness = teamStats.rightTeamBusiness || 0;
         }
     }
 
