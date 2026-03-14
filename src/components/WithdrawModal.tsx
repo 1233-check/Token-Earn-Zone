@@ -7,9 +7,10 @@ import { createWithdrawRequest, verifyTransactionPin } from "@/lib/supabase";
 interface WithdrawModalProps {
     isOpen: boolean;
     onClose: () => void;
+    profitBalance?: number;
 }
 
-export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
+export default function WithdrawModal({ isOpen, onClose, profitBalance }: WithdrawModalProps) {
     const { user, profile, refreshProfile } = useAuth();
     const [address, setAddress] = useState("");
     const [amount, setAmount] = useState("");
@@ -17,6 +18,9 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!isOpen) return null;
+
+    // Use profitBalance if provided, otherwise fall back to total_balance
+    const withdrawableBalance = profitBalance ?? profile?.total_balance ?? 0;
 
     const handleWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,8 +42,8 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             return;
         }
 
-        if (withdrawAmount > profile.total_balance) {
-            toast.error("Insufficient balance");
+        if (withdrawAmount > withdrawableBalance) {
+            toast.error("Insufficient profit balance for withdrawal");
             return;
         }
 
@@ -73,7 +77,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
             return;
         }
 
-        toast.success("Withdrawal request submitted! Waiting for admin approval.");
+        toast.success("Withdrawal request submitted! Withdrawal Processing.");
         await refreshProfile();
         onClose();
         setAddress("");
@@ -92,7 +96,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                 </button>
 
                 <h2 className="text-2xl font-bold mb-2">Withdraw Crypto</h2>
-                <p className="text-sm text-gray-400 mb-6">Your withdrawal request will be processed manually by an admin.</p>
+                <p className="text-sm text-gray-400 mb-6">Your withdrawal request is being processed. You will be notified once complete.</p>
 
                 <form onSubmit={handleWithdraw} className="space-y-4">
                     <div>
@@ -109,7 +113,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                     <div>
                         <label className="text-sm text-gray-400 mb-2 flex justify-between">
                             <span>Amount (USD)</span>
-                            <span className="text-gray-500">Balance: ${profile?.total_balance?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || "0.00"}</span>
+                            <span className="text-gray-500">Profit Balance: ${withdrawableBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                         </label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -122,7 +126,7 @@ export default function WithdrawModal({ isOpen, onClose }: WithdrawModalProps) {
                             />
                             <button
                                 type="button"
-                                onClick={() => setAmount(profile?.total_balance?.toString() || "0")}
+                                onClick={() => setAmount(withdrawableBalance.toString())}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-[var(--color-accent)] font-bold hover:underline"
                             >
                                 MAX

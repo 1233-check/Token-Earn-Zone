@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Gauge, Wallet, User, CircleDollarSign, Landmark, Headset } from "lucide-react";
+import { Gauge, Wallet, User, Landmark, Headset } from "lucide-react";
 
 export default function Footer() {
     const pathname = usePathname();
@@ -11,7 +11,6 @@ export default function Footer() {
         { href: "/", icon: Gauge },
         { href: "/wallet", icon: Wallet },
         { href: "/profile", icon: User },
-        { href: "/earn", icon: CircleDollarSign },
         { href: "/bank", icon: Landmark },
         { href: "/support", icon: Headset },
     ];

@@ -51,7 +51,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
             return;
         }
 
-        toast.success("Deposit request submitted! Waiting for admin approval.");
+        toast.success("Deposit request submitted! Deposit Processing.");
         setHasTransferred(true);
         setTimeout(() => {
             onClose();
@@ -85,7 +85,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                     </div>
 
                     <div className="w-full">
-                        <label className="text-sm text-gray-400 mb-2 block">Admin Deposit Address (BEP20)</label>
+                        <label className="text-sm text-gray-400 mb-2 block">Deposit Address (BEP20)</label>
                         <div className="flex items-center p-3 bg-[#0a0f0a] rounded-xl border border-[var(--color-card-border)]">
                             <span className="flex-1 font-mono text-gray-300 truncate">{depositAddress}</span>
                             <button
@@ -136,7 +136,7 @@ export default function DepositModal({ isOpen, onClose }: DepositModalProps) {
                         ) : hasTransferred ? (
                             <>
                                 <Check size={20} />
-                                Pending Admin Approval...
+                                Deposit Processing...
                             </>
                         ) : (
                             "I have made the transfer"

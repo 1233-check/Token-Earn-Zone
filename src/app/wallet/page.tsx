@@ -57,7 +57,7 @@ export default function WalletPage() {
             const { error } = await createDepositRequest(user.id, txHash, Number(depositAmount));
             if (error) throw new Error(error.message);
 
-            toast.success("Deposit request submitted for approval!");
+            toast.success("Deposit request submitted! Deposit Processing.");
             setDepositAmount("");
             setTxHash("");
             await loadData();
@@ -134,7 +134,7 @@ export default function WalletPage() {
 
                         <div className="bg-[#040804]/50 border border-[var(--color-card-border)] rounded-2xl p-4 flex flex-col items-center gap-3">
                             <div className="w-40 h-40 bg-white rounded-xl p-2 flex items-center justify-center">
-                                <img src="/qr.png" alt="Admin Deposit QR" className="w-full h-full object-contain" />
+                                <img src="/qr.png" alt="Deposit QR" className="w-full h-full object-contain" />
                             </div>
                             <p className="text-[var(--color-text-muted)] text-sm text-center">Scan or copy the address below to send USDT (BEP20)</p>
                             <div className="flex w-full mt-1">
@@ -176,7 +176,7 @@ export default function WalletPage() {
                             disabled={isSubmitting}
                             className="w-full mt-2 bg-[var(--color-accent)] text-[#0a150b] font-bold py-3.5 flex items-center justify-center gap-2 rounded-xl hover:bg-[var(--color-accent-hover)] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Submit for Approval"}
+                            {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : "Submit Deposit"}
                         </button>
                     </div>
                 ) : (
