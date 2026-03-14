@@ -212,6 +212,8 @@ export async function getDashboardStats(userId: string) {
     let todayDeposits = 0;
     let totalROIIncome = 0;
     let todayROIIncome = 0;
+    let totalReferralIncome = 0;
+    let todayReferralIncome = 0;
 
     (txs || []).forEach(tx => {
         const amount = Number(tx.amount || 0);
@@ -223,6 +225,9 @@ export async function getDashboardStats(userId: string) {
         } else if (tx.type === 'roi_distribution') {
             totalROIIncome += amount;
             if (isToday) todayROIIncome += amount;
+        } else if (tx.type === 'direct_referral_bonus' || tx.type === 'pair_matching_bonus') {
+            totalReferralIncome += amount;
+            if (isToday) todayReferralIncome += amount;
         }
     });
 
@@ -279,10 +284,12 @@ export async function getDashboardStats(userId: string) {
         // Income
         todayROIIncome,
         totalROIIncome,
+        totalReferralIncome,
+        todayReferralIncome,
         totalDeposits,
         todayDeposits,
-        totalIncome: totalROIIncome,
-        todayIncome: todayROIIncome,
+        totalIncome: totalROIIncome + totalReferralIncome,
+        todayIncome: todayROIIncome + todayReferralIncome,
         // Slots / Units
         activeSlotCount,
         totalSlotInvestment,
