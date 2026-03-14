@@ -136,7 +136,7 @@ export async function getDailySlotsConfig() {
         .from('daily_slots_config')
         .select('*')
         .eq('booking_date', today)
-        .single();
+        .maybeSingle();
 
     // If not found or error, safely assume 0 booked so far and UI can handle it.
     // The backend RPC handles the strict check.
