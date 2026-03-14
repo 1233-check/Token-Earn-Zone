@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import ConnectButton from "@/components/ConnectButton";
 import DepositModal from "@/components/DepositModal";
 import WithdrawModal from "@/components/WithdrawModal";
+import PromoPopup from "@/components/PromoPopup";
 
 const IncomeItem = ({ label, value, isLoading }: { label: string, value: string | number, isLoading?: boolean }) => (
   <div className="flex justify-between items-center w-full">
@@ -440,6 +441,7 @@ export default function Home() {
 
       <DepositModal isOpen={isDepositOpen} onClose={() => setIsDepositOpen(false)} />
       <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} profitBalance={profitBalance} />
+      <PromoPopup />
     </div>
   );
 }
