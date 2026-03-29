@@ -188,7 +188,10 @@ export default function Home() {
     }
     setIsBooking(true);
     try {
-      const { error } = await bookSlot(user.id, amount, 0.10);
+      const isTomorrowOrAfter = new Date() >= new Date("2026-03-30T00:00:00Z");
+      const roiRate = isTomorrowOrAfter ? 0.05 : 0.10;
+      
+      const { error } = await bookSlot(user.id, amount, roiRate);
       if (error) throw new Error(error.message);
       toast.success("Slot booked successfully! Booking Processing.");
       setUnitsToBuy("");
@@ -392,7 +395,7 @@ export default function Home() {
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span className="text-[var(--color-text-muted)]">Daily ROI:</span>
-                  <span className="text-[var(--color-text-muted)]">{(Number(slot.daily_roi_rate) * 100).toFixed(1)}%</span>
+                  <span className="text-[var(--color-text-muted)]">{(Number(slot.daily_roi_rate) * 100).toPrecision()}%</span>
                 </div>
               </div>
             ))
