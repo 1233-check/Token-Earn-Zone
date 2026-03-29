@@ -161,7 +161,10 @@ export default function AdminDashboard() {
                                             {transactions.map(tx => (
                                                 <tr key={tx.id} className="border-b border-[var(--color-card-border)] hover:bg-white/5">
                                                     <td className="px-4 py-4 font-bold text-white uppercase">{tx.type}</td>
-                                                    <td className="px-4 py-4 font-mono text-xs">{tx.wallet_address.substring(0, 8)}...</td>
+                                                    <td className="px-4 py-4 text-sm">
+                                                        <div className="font-medium text-white">{tx.users?.full_name || 'Unknown'}</div>
+                                                        <div className="text-xs text-[var(--color-text-muted)]">{tx.users?.email || tx.users?.unique_id || 'N/A'}</div>
+                                                    </td>
                                                     <td className="px-4 py-4 font-bold text-[var(--color-accent)]">${Number(tx.amount).toFixed(2)}</td>
                                                     <td className="px-4 py-4 font-mono text-xs max-w-[150px] truncate" title={tx.tx_hash || tx.destination_address}>
                                                         {tx.tx_hash || tx.destination_address || 'N/A'}
@@ -212,7 +215,10 @@ export default function AdminDashboard() {
                                         <tbody>
                                             {slots.map(slot => (
                                                 <tr key={slot.id} className="border-b border-[var(--color-card-border)] hover:bg-white/5">
-                                                    <td className="px-4 py-4 font-mono text-xs">{slot.wallet_address.substring(0, 8)}...</td>
+                                                    <td className="px-4 py-4 text-sm">
+                                                        <div className="font-medium text-white">{slot.users?.full_name || 'Unknown'}</div>
+                                                        <div className="text-xs text-[var(--color-text-muted)]">{slot.users?.email || slot.users?.unique_id || 'N/A'}</div>
+                                                    </td>
                                                     <td className="px-4 py-4 font-bold text-white">${Number(slot.amount).toFixed(2)}</td>
                                                     <td className="px-4 py-4 text-[#fbbf24]">{(Number(slot.daily_roi_rate) * 100).toFixed(1)}%</td>
                                                     <td className="px-4 py-4 flex gap-2">

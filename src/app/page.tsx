@@ -232,7 +232,7 @@ export default function Home() {
         <div className="flex justify-between w-full">
           <div className="font-bold text-[17px] leading-snug mt-1 z-10 w-1/2">Token Earn<br />Zone</div>
           <div className="text-right flex flex-col gap-2 items-end mt-1 z-10 w-1/2">
-            <div className="font-bold text-[#e1e2e1] flex gap-2">Balance : {isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${profitBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
+            <div className="font-bold text-[#e1e2e1] flex gap-2">Balance : {isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${Number(profile?.total_balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
             <div className="font-bold text-[15px] leading-tight flex gap-2 items-center">Slot Investment :<br />{isLoadingStats ? <Loader2 size={16} className="animate-spin text-white" /> : `$${principalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</div>
           </div>
         </div>

@@ -10,7 +10,7 @@ export default function WalletPage() {
     const { user, profile } = useAuth();
     const [activeTab, setActiveTab] = useState<"deposit" | "transfer">("deposit");
 
-    const [totalDeposits, setTotalDeposits] = useState(0);
+    const [withdrawableBalance, setWithdrawableBalance] = useState(0);
     const [transactions, setTransactions] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -23,7 +23,10 @@ export default function WalletPage() {
         setIsLoading(true);
         try {
             const stats = await getDashboardStats(user.id);
-            if (stats) setTotalDeposits(stats.totalDeposits);
+            if (stats) {
+                // Withdrawable = mining rewards + referral bonuses only
+                setWithdrawableBalance(Number(stats.totalROIIncome || 0) + Number(stats.totalReferralIncome || 0));
+            }
 
             const txs = await getTransactions(user.id);
             setTransactions(txs || []);
@@ -91,10 +94,10 @@ export default function WalletPage() {
                     <div className="absolute bottom-0 left-0 w-24 h-24 bg-[var(--color-accent)]/10 rounded-full blur-2xl -ml-10 -mb-10" />
 
                     <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                        <p className="text-[var(--color-text-muted)] text-[15px] font-medium mb-1">Total Deposit Balance</p>
+                        <p className="text-[var(--color-text-muted)] text-[15px] font-medium mb-1">Withdrawable Balance</p>
                         <div className="flex items-end justify-center gap-1 mb-6">
                             <span className="text-[var(--color-accent)] text-4xl font-bold">
-                                {isLoading ? <Loader2 className="animate-spin inline" size={32} /> : `$${totalDeposits.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                                {isLoading ? <Loader2 className="animate-spin inline" size={32} /> : `$${withdrawableBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                             </span>
                             <span className="text-[var(--color-text-muted)] text-lg mb-1">USD</span>
                         </div>

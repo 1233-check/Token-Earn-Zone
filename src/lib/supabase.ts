@@ -78,13 +78,12 @@ export function onAuthStateChange(callback: (event: string, session: any) => voi
 }
 
 // Transactions
-export async function createDepositRequest(walletAddress: string, txHash: string, amount: number = 0) {
+export async function createDepositRequest(userId: string, txHash: string, amount: number = 0) {
     const { data, error } = await supabase
         .from('transactions')
         .insert([
             {
-                wallet_address: walletAddress,
-                user_id: walletAddress,
+                user_id: userId,
                 type: 'deposit',
                 tx_hash: txHash,
                 amount: amount,
@@ -96,13 +95,12 @@ export async function createDepositRequest(walletAddress: string, txHash: string
     return { data, error };
 }
 
-export async function createWithdrawRequest(walletAddress: string, destinationAddress: string, amount: number) {
+export async function createWithdrawRequest(userId: string, destinationAddress: string, amount: number) {
     const { data, error } = await supabase
         .from('transactions')
         .insert([
             {
-                wallet_address: walletAddress,
-                user_id: walletAddress,
+                user_id: userId,
                 type: 'withdrawal',
                 destination_address: destinationAddress,
                 amount: amount,
@@ -336,7 +334,7 @@ export async function getTotalTeamSize(uniqueId: string | undefined): Promise<nu
 export async function getAdminPendingTransactions() {
     const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select('*, users!transactions_user_id_fkey(full_name, email, unique_id)')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
     return { data, error };
@@ -345,7 +343,7 @@ export async function getAdminPendingTransactions() {
 export async function getAdminPendingSlots() {
     const { data, error } = await supabase
         .from('slot_bookings')
-        .select('*')
+        .select('*, users!slot_bookings_user_id_fkey(full_name, email, unique_id)')
         .eq('status', 'pending_approval')
         .order('created_at', { ascending: false });
     return { data, error };
