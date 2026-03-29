@@ -84,6 +84,7 @@ export async function createDepositRequest(userId: string, txHash: string, amoun
         .insert([
             {
                 user_id: userId,
+                wallet_address: userId,
                 type: 'deposit',
                 tx_hash: txHash,
                 amount: amount,
@@ -101,6 +102,7 @@ export async function createWithdrawRequest(userId: string, destinationAddress: 
         .insert([
             {
                 user_id: userId,
+                wallet_address: userId,
                 type: 'withdrawal',
                 destination_address: destinationAddress,
                 amount: amount,
