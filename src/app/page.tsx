@@ -188,8 +188,16 @@ export default function Home() {
     }
     setIsBooking(true);
     try {
-      const isTomorrowOrAfter = new Date() >= new Date("2026-03-30T00:00:00Z");
-      const roiRate = isTomorrowOrAfter ? 0.05 : 0.10;
+      // ROI rate tiers by date
+      const bookingDate = new Date();
+      let roiRate: number;
+      if (bookingDate >= new Date("2026-05-03T00:00:00Z")) {
+        roiRate = 0.03; // 3% from May 3 onward
+      } else if (bookingDate >= new Date("2026-03-30T00:00:00Z")) {
+        roiRate = 0.05; // 5% from Mar 30 – May 2
+      } else {
+        roiRate = 0.10; // 10% before Mar 30
+      }
       
       const { error } = await bookSlot(user.id, amount, roiRate);
       if (error) throw new Error(error.message);
@@ -378,27 +386,47 @@ export default function Home() {
           {isLoadingSlots ? (
             <div className="flex justify-center py-6"><Loader2 size={24} className="animate-spin text-[var(--color-accent)]" /></div>
           ) : userSlots.bookings && userSlots.bookings.length > 0 ? (
-            userSlots.bookings.map((slot: any) => (
-              <div key={slot.id} className="bg-[#040804]/50 rounded-2xl p-4 border border-[#1a2a1b]">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${['active', 'confirmed'].includes(slot.status) ? 'bg-[var(--color-accent)]' : 'bg-[#fbbf24]'}`} />
-                    <span className="text-white font-medium">Slot ${slot.amount}</span>
+            userSlots.bookings.map((slot: any) => {
+              const capAmount = Number(slot.amount) * 2;
+              const earned = Number(slot.total_earned);
+              const capPercent = Math.min(100, (earned / capAmount) * 100);
+              const isCompleted = slot.status === 'completed';
+              const isActive = ['active', 'confirmed'].includes(slot.status);
+              return (
+                <div key={slot.id} className={`bg-[#040804]/50 rounded-2xl p-4 border ${isCompleted ? 'border-[var(--color-accent)]/30' : 'border-[#1a2a1b]'}`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${isCompleted ? 'bg-[var(--color-accent)]' : isActive ? 'bg-[var(--color-accent)]' : 'bg-[#fbbf24]'}`} />
+                      <span className="text-white font-medium">Slot ${slot.amount}</span>
+                    </div>
+                    <div className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                      isCompleted
+                        ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
+                        : isActive
+                          ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
+                          : 'bg-[#fbbf24]/10 text-[#fbbf24]'
+                    }`}>
+                      {isCompleted ? 'Mining Complete ✓' : isActive ? 'Active Mining' : 'Booking Processing'}
+                    </div>
                   </div>
-                  <div className={`px-2 py-0.5 rounded text-xs font-semibold ${['active', 'confirmed'].includes(slot.status) ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]' : 'bg-[#fbbf24]/10 text-[#fbbf24]'}`}>
-                    {['active', 'confirmed'].includes(slot.status) ? 'Active Mining' : 'Booking Processing'}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[var(--color-text-muted)]">Total Earned:</span>
+                    <span className="text-white font-semibold">${earned.toFixed(2)} / ${capAmount.toFixed(2)}</span>
+                  </div>
+                  {/* 2× Cap Progress Bar */}
+                  <div className="w-full bg-[#1a2a1b] rounded-full h-2 mt-2.5 mb-1 overflow-hidden">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-accent)]/70'}`}
+                      style={{ width: `${capPercent}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span className="text-[var(--color-text-muted)]">{capPercent.toFixed(1)}% of 2× cap</span>
+                    <span className="text-[var(--color-text-muted)]">ROI: {(Number(slot.daily_roi_rate) * 100).toFixed(0)}%/day</span>
                   </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-[var(--color-text-muted)]">Total Earned:</span>
-                  <span className="text-white font-semibold">${Number(slot.total_earned).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm mt-1">
-                  <span className="text-[var(--color-text-muted)]">Daily ROI:</span>
-                  <span className="text-[var(--color-text-muted)]">{(Number(slot.daily_roi_rate) * 100).toPrecision()}%</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <div className="w-16 h-16 rounded-full bg-[#0a150b] flex items-center justify-center mb-4">

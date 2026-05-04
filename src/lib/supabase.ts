@@ -155,17 +155,19 @@ export async function getUserSlotStats(userId: string) {
 
     if (error) {
         console.error('Error fetching user slots:', error);
-        return { activeSlots: 0, pendingSlots: 0, totalSlots: 0, totalEarned: 0 };
+        return { activeSlots: 0, pendingSlots: 0, completedSlots: 0, totalSlots: 0, totalEarned: 0 };
     }
 
     const activeSlots = data.filter(s => s.status === 'active' || s.status === 'confirmed').length;
     const pendingSlots = data.filter(s => s.status === 'pending_approval' || s.status === 'pending').length;
+    const completedSlots = data.filter(s => s.status === 'completed').length;
     const totalEarned = data.reduce((sum, slot) => sum + Number(slot.total_earned), 0);
 
     return {
         activeSlots,
         pendingSlots,
-        totalSlots: activeSlots + pendingSlots,
+        completedSlots,
+        totalSlots: activeSlots + pendingSlots + completedSlots,
         totalEarned,
         bookings: data
     };
@@ -231,16 +233,19 @@ export async function getDashboardStats(userId: string) {
         }
     });
 
-    // 3. User slots (active/confirmed)
+    // 3. User slots (active/confirmed/completed)
     const { data: slots } = await supabase
         .from('slot_bookings')
         .select('id, amount, status, total_earned')
         .or(`user_id.eq.${userId},wallet_address.eq.${userId}`);
 
     const activeSlots = (slots || []).filter(s => s.status === 'active' || s.status === 'confirmed');
+    const completedSlots = (slots || []).filter(s => s.status === 'completed');
+    const allCountedSlots = [...activeSlots, ...completedSlots];
     const activeSlotCount = activeSlots.length;
-    const totalSlotInvestment = activeSlots.reduce((sum, s) => sum + Number(s.amount || 0), 0);
-    const totalSlotEarned = activeSlots.reduce((sum, s) => sum + Number(s.total_earned || 0), 0);
+    const completedSlotCount = completedSlots.length;
+    const totalSlotInvestment = allCountedSlots.reduce((sum, s) => sum + Number(s.amount || 0), 0);
+    const totalSlotEarned = allCountedSlots.reduce((sum, s) => sum + Number(s.total_earned || 0), 0);
 
     // 4. Team stats (left/right referral business volume)
     const { data: userData } = await supabase
