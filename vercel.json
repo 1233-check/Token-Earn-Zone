@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/distribute-roi",
+      "schedule": "30 16 * * *"
+    }
+  ]
+}
