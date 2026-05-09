@@ -44,3 +44,4 @@ migration_report.mjs
 next-env.d.ts
 
 .vercel
+.env*.local

@@ -35,7 +35,7 @@ BEGIN
   FOR slot_rec IN
       SELECT id, wallet_address, user_id, amount, daily_roi_rate, total_earned
       FROM public.slot_bookings
-      WHERE status = 'active'
+      WHERE status IN ('active', 'confirmed')
   LOOP
       v_max_earning := slot_rec.amount * 2;
       v_remaining   := v_max_earning - slot_rec.total_earned;
