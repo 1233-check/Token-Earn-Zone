@@ -1,31 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 export default function ConnectButton() {
-    const [mounted, setMounted] = useState(false);
     const { isConnected, address } = useAccount();
-    const { connect, connectors, isPending } = useConnect();
+    const { connect, connectors, isPending, error: connectError } = useConnect();
     const { disconnect } = useDisconnect();
     const [showOptions, setShowOptions] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const handleDisconnect = () => {
-        disconnect();
-    };
-
     const displayAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
-
-    if (!mounted) return null;
 
     if (isConnected) {
         return (
             <button
-                onClick={handleDisconnect}
+                onClick={() => disconnect()}
                 className="px-4 py-2 rounded-full border border-[var(--color-card-border)] bg-card text-[#ea0606] font-semibold hover:bg-white/5 transition-colors text-sm flex items-center gap-2"
             >
                 <div className="w-2 h-2 rounded-full bg-[var(--color-accent)]"></div>
@@ -49,7 +38,16 @@ export default function ConnectButton() {
                     {connectors.map((connector) => (
                         <button
                             key={connector.uid}
-                            onClick={() => connect({ connector })}
+                            onClick={() => {
+                                connect(
+                                    { connector },
+                                    {
+                                        onError: (err) => {
+                                            console.error("Wallet connect error:", err);
+                                        },
+                                    }
+                                );
+                            }}
                             disabled={isPending}
                             className="w-full text-left px-4 py-3.5 rounded-xl bg-card border border-[var(--color-card-border)] text-white font-medium hover:border-[var(--color-accent)] transition-all flex items-center justify-between group"
                         >
@@ -57,6 +55,13 @@ export default function ConnectButton() {
                             {isPending && <span className="text-xs text-[var(--color-accent)] animate-pulse">Connecting...</span>}
                         </button>
                     ))}
+                    {connectError && (
+                        <p className="text-xs text-red-400 text-center mt-1">
+                            {connectError.message?.includes("rejected")
+                                ? "Connection rejected by wallet."
+                                : "Failed to connect. Make sure your wallet is unlocked."}
+                        </p>
+                    )}
                     <button
                         onClick={() => setShowOptions(false)}
                         className="text-sm text-[var(--color-text-muted)] hover:text-white mt-3 transition-colors text-center w-full"

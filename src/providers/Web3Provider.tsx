@@ -7,15 +7,12 @@ import { injected, walletConnect } from 'wagmi/connectors';
 
 const queryClient = new QueryClient();
 
-// If they eventually provide a projectId, we can still support WalletConnect alongside injected wallets
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
 
-const connectors = [];
-connectors.push(injected());
-
-if (projectId) {
-    connectors.push(walletConnect({ projectId, showQrModal: true }));
-}
+// Only include WalletConnect connector if a valid projectId is provided
+const connectors = projectId
+    ? [injected(), walletConnect({ projectId, showQrModal: true })]
+    : [injected()];
 
 export const wagmiConfig = createConfig({
     chains: [bsc],
