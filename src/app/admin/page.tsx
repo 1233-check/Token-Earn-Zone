@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAppKitAccount } from "@reown/appkit/react";
 import { ShieldAlert, CheckCircle, XCircle, Loader2, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/lib/supabase";
 
 export default function AdminDashboard() {
-    const { address, isConnected } = useAccount();
+    const { address, isConnected } = useAppKitAccount();
     const adminAddress = process.env.NEXT_PUBLIC_ADMIN_WALLET_ADDRESS?.toLowerCase();
 
     const [activeTab, setActiveTab] = useState<"deposits" | "slots" | "system">("deposits");

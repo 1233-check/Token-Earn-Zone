@@ -1,6 +1,7 @@
 "use client";
 
-import { useAccount, useDisconnect } from "wagmi";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useDisconnect } from "wagmi";
 import { User, LogOut, ShieldCheck, KeyRound, Users, Trophy, Wallet, Loader2, Copy, Check } from "lucide-react";
 import ConnectButton from "@/components/ConnectButton";
 import { useEffect, useState } from "react";
@@ -11,7 +12,7 @@ import TransactionPinModal from "@/components/TransactionPinModal";
 
 export default function ProfilePage() {
     const { user, profile, signOut, isLoading: authLoading } = useAuth();
-    const { isConnected, address } = useAccount();
+    const { isConnected, address } = useAppKitAccount();
     const { disconnect } = useDisconnect();
     const [mounted, setMounted] = useState(false);
     const [stats, setStats] = useState<any>(null);
