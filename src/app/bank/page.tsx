@@ -169,7 +169,7 @@ export default function BankPage() {
             </div>
 
             <p className="text-center text-[var(--color-text-muted)] text-xs px-4 mt-2">
-                Withdrawals are processed manually within 24-48 hours. A 5% withdrawal fee applies to all standard requests.
+                Withdrawals are processed manually within 24-48 hours. A 12% withdrawal fee applies to all standard requests.
             </p>
 
         </div>

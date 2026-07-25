@@ -1,9 +1,9 @@
 -- 7. Slot Bookings, Limits, and ROI Logic
 
--- Daily slot configuration (Max 50 per day)
+-- Daily slot configuration (Max 325 per day)
 CREATE TABLE IF NOT EXISTS public.daily_slots_config (
   booking_date DATE PRIMARY KEY DEFAULT CURRENT_DATE,
-  slots_booked INTEGER DEFAULT 0 CHECK (slots_booked >= 0 AND slots_booked <= 50)
+  slots_booked INTEGER DEFAULT 0 CHECK (slots_booked >= 0 AND slots_booked <= 325)
 );
 
 -- Slot statuses
@@ -74,8 +74,8 @@ BEGIN
   WHERE booking_date = v_today
   FOR UPDATE;
 
-  IF v_current_slots >= 50 THEN
-     RAISE EXCEPTION 'The daily limit of 50 slots has been reached. Please try tomorrow.';
+  IF v_current_slots >= 325 THEN
+     RAISE EXCEPTION 'The daily limit of 325 slots has been reached. Please try tomorrow.';
   END IF;
 
   UPDATE public.daily_slots_config

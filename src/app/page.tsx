@@ -78,7 +78,7 @@ export default function Home() {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
   // Slot / Buy state
-  const [slotsRemaining, setSlotsRemaining] = useState<number>(50);
+  const [slotsRemaining, setSlotsRemaining] = useState<number>(325);
   const [unitsToBuy, setUnitsToBuy] = useState("");
   const [isBooking, setIsBooking] = useState(false);
   const [userSlots, setUserSlots] = useState<{ bookings?: any[] }>({});
@@ -134,7 +134,7 @@ export default function Home() {
   const loadSlots = useCallback(async () => {
     try {
       const config = await getDailySlotsConfig();
-      setSlotsRemaining(Math.max(0, 50 - (config?.slots_booked || 0)));
+      setSlotsRemaining(Math.max(0, 325 - (config?.slots_booked || 0)));
     } catch (e) {
       console.error("Failed to load slots config", e);
     }
